@@ -1,0 +1,172 @@
+<!-- 
+Jose Valencia  
+joanvale@ucsc.edu
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Assignment 2: Creeper</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 20px;
+      }
+      canvas {
+        display: block;
+        margin-bottom: 10px;
+      }
+      fieldset {
+        margin-bottom: 1em;
+        padding: 0.5em;
+      }
+      legend {
+        font-weight: bold;
+      }
+      .control-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        margin-top: 0.5em;
+      }
+      .control-group label {
+        min-width: 120px;
+      }
+      #fps {
+        margin-top: -0.5em;
+        margin-bottom: 1em;
+      }
+    </style>
+  </head>
+  <body onload="main()">
+    <!-- ─── Student & Grader Info ─── -->
+
+    <canvas id="webgl" width="600" height="600">
+      Please use a browser that supports &lt;canvas&gt;
+    </canvas>
+    <p id="fps">ms:0, fps:0</p>
+
+    <fieldset>
+      <legend>Camera Angles</legend>
+      <div class="control-group">
+        <label for="CameraSlideX">Cam X</label>
+        <input
+          type="range"
+          id="CameraSlideX"
+          min="0"
+          max="360"
+          value="0"
+          class="slider"
+        />
+      </div>
+      <div class="control-group">
+        <label for="CameraSlideY">Cam Y</label>
+        <input
+          type="range"
+          id="CameraSlideY"
+          min="0"
+          max="360"
+          value="180"
+          class="slider"
+        />
+      </div>
+      <div class="control-group">
+        <label for="CameraSlideZ">Cam Z</label>
+        <input
+          type="range"
+          id="CameraSlideZ"
+          min="0"
+          max="360"
+          value="0"
+          class="slider"
+        />
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Joints</legend>
+      <div class="control-group">
+        <label for="joint1">First Joint</label>
+        <input
+          type="range"
+          id="joint1"
+          min="0"
+          max="25"
+          value="0"
+          class="slider"
+        />
+      </div>
+      <div class="control-group">
+        <label for="joint2">Second Joint</label>
+        <input
+          type="range"
+          id="joint2"
+          min="0"
+          max="12"
+          value="0"
+          class="slider"
+        />
+      </div>
+      <div class="control-group">
+        <label for="joint3">Third Joint</label>
+        <input
+          type="range"
+          id="joint3"
+          min="0"
+          max="12"
+          value="0"
+          class="slider"
+        />
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Animation Controls</legend>
+      <div class="control-group">
+        <label>Walking</label>
+        <button id="Animation_On">On</button>
+        <button id="Animation_Off">Off</button>
+      </div>
+      <div class="control-group">
+        <label>Poke Mode</label>
+        <button id="PokeMode_On">On</button>
+        <button id="PokeMode_Off">Off</button>
+      </div>
+    </fieldset>
+
+    <p><strong>Notes to Grader:</strong></p>
+    <p>
+      I was inspired by the creeper from Minecraft. I wanted to make a blocky
+      animal that looks like a creeper. The creeper has 3 joints—head, legs, and
+      feet. I also made a <code>Cone.js</code> file similar to
+      <code>Cube.js</code> to put a party cone on its head as the non‐cube
+      primitive requirement. Use the Poke Mode button or Shift-click the canvas
+      to enter party mode!
+    </p>
+
+    <div
+      id="student-info"
+      style="margin-bottom: 1em; font-size: 0.9em; color: #333"
+    >
+      <p><strong>Name:</strong> Jose Valencia</p>
+      <p><strong>Email:</strong> joanvale@ucsc.edu</p>
+    </div>
+
+    <footer>
+      <small>
+        Creeper design inspired by Minecraft® (© Mojang Studios). This is a fan
+        project and is not affiliated with or endorsed by Mojang.
+      </small>
+    </footer>
+
+    <script src="../lib/webgl-utils.js"></script>
+    <script src="../lib/webgl-debug.js"></script>
+    <script src="../lib/cuon-utils.js"></script>
+    <script src="../lib/cuon-matrix-cse160.js"></script>
+    <script src="BlockyAnimal.js"></script>
+    <script src="Triangle.js"></script>
+    <script src="Cube.js"></script>
+    <script src="Cone.js"></script>
+  </body>
+</html>
