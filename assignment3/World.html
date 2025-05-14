@@ -1,0 +1,105 @@
+<!-- 
+Jose Valencia
+
+-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Maze-Seek Adventure</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+    #canvas-container {
+      flex: 1;
+      background: #000;
+    }
+    #sidebar {
+      width: 300px;
+      padding: 20px;
+      box-sizing: border-box;
+      background: #f7f7f7;
+      overflow-y: auto;
+      border-left: 1px solid #ccc;
+    }
+    #sidebar h1 {
+      font-size: 1.5em;
+      margin-top: 0;
+    }
+    #sidebar button {
+      margin: 5px 0;
+      width: 100%;
+      padding: 8px;
+      font-size: 1em;
+    }
+    #sidebar ul {
+      padding-left: 1.2em;
+    }
+  </style>
+</head>
+<body onload="main()">
+
+  <div id="canvas-container">
+    <canvas id="webgl" width="800" height="600">
+      Your browser doesn’t support HTML5 Canvas.
+    </canvas>
+    <p id="fps" style="position:absolute; bottom:8px; left:8px; color:#fff;"></p>
+  </div>
+
+  <div id="sidebar">
+    <h1>Welcome to the Maze!</h1>
+    <p>
+      You’re about to play hide-and-seek with a wandering Creeper. <br>
+      Click <strong>“Call Creeper”</strong> to spawn him somewhere deep in the maze. 
+      Then use your keys to track him down.
+    </p>
+
+    <button id="CallTheCreeper">Call Creeper</button>
+    <button id="Animate">Animate Creeper</button>
+
+    <h2>How to Play</h2>
+    <ol>
+      <li>Click <strong>Call Creeper</strong> to send him to a random spot.</li>
+      <li>Use <strong>W/A/S/D</strong> to walk around the grid.</li>
+      <li>Use the mouse (click & drag) to look around.</li>
+      <li>When you think you found him, press <strong>Animate Creeper</strong> to watch him walk.</li>
+    </ol>
+
+    <h2>Key-Bindings</h2>
+    <ul>
+      <li><strong>W</strong>: Move Forward</li>
+      <li><strong>S</strong>: Move Backward</li>
+      <li><strong>A</strong>: Strafe Left</li>
+      <li><strong>D</strong>: Strafe Right</li>
+      <li><strong>Q / E</strong>: Pan camera left / right</li>
+      <li><strong>↑ / ↓</strong>: Move camera Up / Down</li>
+    </ul>
+
+    <h2>Build & Break</h2>
+    <ul>
+      <li><strong>Z</strong> (press): Place a wood-plank block in front of you</li>
+      <li><strong>X</strong> (press): Break the block in front of you</li>
+    </ul>
+  </div>
+
+  <!-- your scripts… -->
+  <script src="lib/webgl-utils.js"></script>
+  <script src="lib/webgl-debug.js"></script>
+  <script src="lib/cuon-utils.js"></script>
+  <script src="lib/cuon-matrix-cse160.js"></script>
+
+  <script src="Triangle.js"></script>
+  <script src="Circle.js"></script>
+  <script src="Point.js"></script>
+  <script src="Cube.js"></script>
+  <script src="Camera.js"></script>
+  <script src="World.js"></script>
+  <script src="Creeper.js"></script>
+</body>
+</html>
