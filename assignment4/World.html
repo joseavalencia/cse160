@@ -1,0 +1,143 @@
+<!-- 
+Jose Valencia
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Assignment 4: Phong Lighting</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #111;
+    }
+    #sidebar {
+      width: 300px;
+      padding: 20px;
+      box-sizing: border-box;
+      background: #f7f7f7;
+      overflow-y: auto;
+      border-left: 1px solid #ccc;
+    }
+    #sidebar h1 { margin-top: 0; font-size: 1.4em; }
+    #sidebar h2 { margin-bottom: 0.2em; margin-top: 1em; }
+    #sidebar button,
+    #sidebar input[type=range] {
+      width: 100%;
+      margin: 5px 0;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+    #sidebar label { display: block; margin-top: 0.5em; }
+
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      background: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #webgl {
+      background-color: #000;
+      border: 2px solid #444;
+      border-radius: 4px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      display: block;
+    }
+    #fps {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      color: #fff;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body onload="main()">
+
+  <div id="canvas-container">
+    <canvas id="webgl" width="800" height="600">
+      Browser should support "Canvas".
+    </canvas>
+    <p id="fps">ms:0, fps:0</p>
+  </div>
+
+  <div id="sidebar">
+    <h1>Assignment 4: Phong Lighting</h1>
+
+    <p style="font-size:0.9em; color:#555;">
+      <em>Tip:</em> Make sure you turn the Spot Light on first, only then will the sliders below move it. 
+    </p>
+
+    <button id="NormalOnOff">Toggle Normal Visualization</button>
+
+    <h2>Lighting</h2>
+    <button id="LightsOn">Turn Lighting On</button>
+    <button id="LightsOff">Turn Lighting Off</button>
+    <h2>Animate Point Light</h2>
+    <button id="LightAnimationOn">Animate Light On</button>
+    <button id="LightAnimationOff">Animate Light Off</button>
+
+    <label for="lightSlideX">Light X</label>
+    <input type="range" id="lightSlideX"   min="0"    max="2000" value="1500">
+    <label for="lightSlideY">Light Y</label>
+    <input type="range" id="lightSlideY"   min="0" max="500"  value="0">
+    <label for="lightSlideZ">Light Z</label>
+    <input type="range" id="lightSlideZ"   min="50"   max="2000" value="1000">
+
+
+    <h2>Spot Light</h2>
+    <button id="Spot_light_on">Spot Light On</button>
+    <button id="Spot_light_off">Spot Light Off</button>
+
+    <label for="SpotlightSlideX">Spotlight X</label>
+    <input type="range" id="SpotlightSlideX" min="50" max="300" value="150">
+    <label for="SpotlightSlideY">Spotlight Y</label>
+    <input type="range" id="SpotlightSlideY" min="50" max="300" value="150">
+    <label for="SpotlightSlideZ">Spotlight Z</label>
+    <input type="range" id="SpotlightSlideZ" min="50" max="300" value="150">
+
+    <h2>Light Color</h2>
+    <label for="lightRed">Red</label>
+    <input type="range" id="lightRed"   min="0" max="255" value="0">
+    <label for="lightGreen">Green</label>
+    <input type="range" id="lightGreen" min="0" max="255" value="0">
+    <label for="lightBlue">Blue</label>
+    <input type="range" id="lightBlue"  min="0" max="255" value="0">
+
+    <hr>
+
+    <h2>Movement &amp; View</h2>
+    <ul>
+      <li><strong>W / S</strong>: Move forward / backward</li>
+      <li><strong>A / D</strong>: Strafe left / right</li>
+      <li><strong>Q / E</strong>: Pan camera left / right</li>
+      <li><strong>↑ / ↓</strong>: Move camera up / down</li>
+      <li>Click &amp; drag on the canvas to look around</li>
+    </ul>
+
+    <h2>Call & Animate Creeper</h2>
+    <button id="CallTheCreeper">Call Creeper</button>
+    <button id="Animate">Animate Creeper</button>
+  </div>
+
+
+  <script src="lib/webgl-utils.js"></script>
+  <script src="lib/webgl-debug.js"></script>
+  <script src="lib/cuon-utils.js"></script>
+  <script src="lib/cuon-matrix-cse160.js"></script>
+  <script src="Camera.js"></script>
+  <script src="Triangle.js"></script>
+  <script src="Circle.js"></script>
+  <script src="Point.js"></script>
+  <script src="Cube.js"></script>
+  <script src="Sphere.js"></script>
+  <script src="Creeper.js"></script>
+  <script src="World.js"></script>
+</body>
+</html>
