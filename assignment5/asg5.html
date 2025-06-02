@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three.js Scene</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    #info {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      color: white;
+      font-family: Arial, sans-serif;
+      pointer-events: none;
+    }
+    #model-controls {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      z-index: 100;
+    }
+    #model-controls a {
+      color: #4af;
+      text-decoration: underline;
+    }
+    #model-controls button {
+      background: #4af;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    #feature-controls {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      z-index: 100;
+    }
+    #feature-controls button {
+      background: #4af;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    #camera-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      z-index: 100;
+      max-width: 250px;
+    }
+    .slider-container {
+      margin: 8px 0;
+    }
+    .slider-container label {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .slider-container input {
+      width: 100%;
+    }
+    .slider-value {
+      margin-left: 8px;
+      font-size: 0.8em;
+    }
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 25px;
+      border-radius: 10px;
+      font-family: Arial, sans-serif;
+      z-index: 1000;
+      text-align: center;
+      display: none;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      min-width: 200px;
+    }
+    .spinner {
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 5px solid #4af;
+      width: 50px;
+      height: 50px;
+      margin: 15px auto;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loading p {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="info">World Scene<br>
+    Use mouse or sliders to navigate:
+  </div>
+  
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading model...</p>
+    <p class="loading-percentage"></p>
+  </div>
+  
+  <div id="model-controls">
+    <p>3D Model:</p>
+    <a href="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb" download="Duck.glb">Download Duck.glb</a>
+    <p>Option 1: Save to models/ folder, then:</p>
+    <button id="load-model">Load Duck Model</button>
+    
+    <p style="margin-top: 10px;">Option 2: Or select a GLB file directly:</p>
+    <input type="file" id="model-input" accept=".glb,.gltf">
+  </div>
+  
+  <div id="feature-controls">
+    <p>Wow Feature:</p>
+    <button id="toggle-text">Lets Celebrate</button>
+    <p>CONGRATS CLASS OF 2025!</p>
+  </div>
+  
+  <div id="camera-controls">
+    <h4 style="margin-top: 0;">Camera Controls</h4>
+    
+    <div class="slider-container">
+      <label for="camera-x">Camera X: <span class="slider-value" id="camera-x-value">0</span></label>
+      <input type="range" id="camera-x" min="-50" max="50" value="0" step="1">
+    </div>
+    
+    <div class="slider-container">
+      <label for="camera-y">Camera Y: <span class="slider-value" id="camera-y-value">5</span></label>
+      <input type="range" id="camera-y" min="1" max="30" value="5" step="1">
+    </div>
+    
+    <div class="slider-container">
+      <label for="camera-z">Camera Z: <span class="slider-value" id="camera-z-value">15</span></label>
+      <input type="range" id="camera-z" min="-50" max="50" value="15" step="1">
+    </div>
+    
+    <div class="slider-container">
+      <label for="camera-fov">Field of View: <span class="slider-value" id="camera-fov-value">75</span></label>
+      <input type="range" id="camera-fov" min="30" max="120" value="75" step="1">
+    </div>
+    
+    <button id="reset-camera">Reset Camera</button>
+  </div>
+  
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    // Set a simple gradient background instead of skybox
+    scene.background = new THREE.Color(0x87CEEB); 
+    scene.fog = new THREE.FogExp2(0x87CEEB, 0.01);
+
+    // Controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    
+    // Camera initial position 
+    camera.position.set(4, 9, 29);
+    controls.update();
+
+    // Lights
+    // 1. Ambient light
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+    scene.add(ambientLight);
+
+    // 2. Directional light (sun-like)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 10, 7.5);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 1024;
+    directionalLight.shadow.mapSize.height = 1024;
+    scene.add(directionalLight);
+
+    // 3. Point light
+    const pointLight = new THREE.PointLight(0xff9000, 1, 100);
+    pointLight.position.set(-5, 5, 5);
+    pointLight.castShadow = true;
+    scene.add(pointLight);
+
+    // 4. Hemisphere light (sky and ground colors)
+    const hemisphereLight = new THREE.HemisphereLight(0xaaaaff, 0x806040, 0.6);
+    scene.add(hemisphereLight);
+
+    // 5. Spot light
+    const spotLight = new THREE.SpotLight(0xffffff, 2, 50, Math.PI / 6, 0.5, 1);
+    spotLight.position.set(10, 10, 0);
+    spotLight.castShadow = true;
+    scene.add(spotLight);
+
+    // 6. RectArea light
+    // celebration mode to create a dramatic effect
+    const rectLight = new THREE.RectAreaLight(0x0088ff, 5, 20, 10);
+    rectLight.position.set(0, 15, -10);
+    rectLight.lookAt(0, 0, 0);
+    rectLight.visible = false; 
+    scene.add(rectLight);
+
+    // Ground plane with texture
+    const textureLoader = new THREE.TextureLoader();
+    const groundTexture = textureLoader.load('resources/grass.png');
+    groundTexture.wrapS = THREE.RepeatWrapping;
+    groundTexture.wrapT = THREE.RepeatWrapping;
+    groundTexture.repeat.set(25, 25);
+    
+    const groundGeometry = new THREE.PlaneGeometry(50, 50);
+    const groundMaterial = new THREE.MeshStandardMaterial({ 
+      map: groundTexture,
+      roughness: 0.8,
+      metalness: 0.2,
+      side: THREE.DoubleSide 
+    });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Create primary shapes
+    const shapes = [];
+
+    // 1. Central cube 
+    const boxTexture = textureLoader.load('resources/brick-wall.jpg');
+    const boxGeometry = new THREE.BoxGeometry(2, 2, 2);
+    const boxMaterial = new THREE.MeshStandardMaterial({ map: boxTexture });
+    const box = new THREE.Mesh(boxGeometry, boxMaterial);
+    box.position.set(0, 1, 0);
+    box.castShadow = true;
+    box.receiveShadow = true;
+    scene.add(box);
+    shapes.push(box);
+
+    // 2-6. Spheres in a circle
+    const marvelTexture = textureLoader.load('resources/marvel.jpg');
+    const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+    const sphereMaterials = [
+      new THREE.MeshStandardMaterial({ color: 0xff0000, roughness: 0.7 }),
+      new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 0.7 }),
+      new THREE.MeshStandardMaterial({ color: 0x0000ff, roughness: 0.7 }),
+      new THREE.MeshStandardMaterial({ map: marvelTexture, roughness: 0.7 }),
+      new THREE.MeshStandardMaterial({ color: 0xff00ff, roughness: 0.7 })
+    ];
+    
+    for (let i = 0; i < 5; i++) {
+      const angle = (i / 5) * Math.PI * 2;
+      const radius = 7;
+      const sphere = new THREE.Mesh(sphereGeometry, sphereMaterials[i]);
+      sphere.position.set(
+        Math.cos(angle) * radius,
+        0.5,
+        Math.sin(angle) * radius
+      );
+      sphere.castShadow = true;
+      sphere.receiveShadow = true;
+      scene.add(sphere);
+      shapes.push(sphere);
+    }
+
+    // 7-12. Cylinders in a circle
+    const woodTexture = textureLoader.load('resources/dark-woodv2.jpg');
+    const cylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 2, 32);
+    const cylinderMaterial = new THREE.MeshStandardMaterial({ 
+      map: woodTexture,
+      roughness: 0.5 
+    });
+    
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2;
+      const radius = 12;
+      const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+      cylinder.position.set(
+        Math.cos(angle) * radius,
+        1,
+        Math.sin(angle) * radius
+      );
+      cylinder.castShadow = true;
+      cylinder.receiveShadow = true;
+      scene.add(cylinder);
+      shapes.push(cylinder);
+    }
+
+    // 13-16. Cones
+    const coneGeometry = new THREE.ConeGeometry(0.5, 1, 32);
+    const coneMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaa00, roughness: 0.3 });
+    
+    for (let i = 0; i < 4; i++) {
+      const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+      cone.position.set(-8 + i * 2, 0.5, -8);
+      cone.castShadow = true;
+      cone.receiveShadow = true;
+      scene.add(cone);
+      shapes.push(cone);
+    }
+
+    // 17-20. Toruses
+    const torusGeometry = new THREE.TorusGeometry(0.5, 0.2, 16, 32);
+    const torusMaterial = new THREE.MeshStandardMaterial({ color: 0x00aaaa, roughness: 0.2 });
+    
+    for (let i = 0; i < 4; i++) {
+      const torus = new THREE.Mesh(torusGeometry, torusMaterial);
+      torus.position.set(-8 + i * 2, 0.5, 8);
+      torus.rotation.x = Math.PI / 2;
+      torus.castShadow = true;
+      torus.receiveShadow = true;
+      scene.add(torus);
+      shapes.push(torus);
+    }
+
+    // 21. Animated shape
+    const sunTexture = textureLoader.load('resources/sun.png');
+    const dodecahedronGeometry = new THREE.DodecahedronGeometry(1.5);
+    const dodecahedronMaterial = new THREE.MeshStandardMaterial({ 
+      map: sunTexture, 
+      roughness: 0.2,
+      metalness: 0.8,
+      emissive: 0xff5500,
+      emissiveIntensity: 0.3
+    });
+    const dodecahedron = new THREE.Mesh(dodecahedronGeometry, dodecahedronMaterial);
+    dodecahedron.position.set(0, 8, 0);
+    dodecahedron.castShadow = true;
+    scene.add(dodecahedron);
+    shapes.push(dodecahedron);
+
+    // Add a simple skybox plane in the background
+    const skyPlaneGeometry = new THREE.PlaneGeometry(200, 100);
+    const skyTexture = textureLoader.load('resources/skyy.jpeg');
+    const skyMaterial = new THREE.MeshBasicMaterial({ 
+      map: skyTexture,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const skyPlane = new THREE.Mesh(skyPlaneGeometry, skyMaterial);
+    skyPlane.position.set(0, 25, -50);
+    scene.add(skyPlane);
+
+    // Add sun 
+    const sunMaterial = new THREE.SpriteMaterial({ 
+      map: sunTexture,
+      color: 0xffffff,
+      transparent: true,
+      blending: THREE.AdditiveBlending
+    });
+    const sun = new THREE.Sprite(sunMaterial);
+    sun.scale.set(20, 20, 1);
+    sun.position.set(30, 40, -40);
+    scene.add(sun);
+    
+    // Adding more objects 
+    const archMaterial = new THREE.MeshStandardMaterial({ 
+      map: textureLoader.load('resources/brick-wall.jpg'),
+      roughness: 0.8
+    });
+    
+    // Create arch pillars
+    const pillarGeometry = new THREE.CylinderGeometry(0.5, 0.5, 4, 8);
+    const leftPillar = new THREE.Mesh(pillarGeometry, archMaterial);
+    leftPillar.position.set(-4, 2, -7);
+    leftPillar.castShadow = true;
+    leftPillar.receiveShadow = true;
+    scene.add(leftPillar);
+    shapes.push(leftPillar);
+    
+    const rightPillar = new THREE.Mesh(pillarGeometry, archMaterial);
+    rightPillar.position.set(4, 2, -7);
+    rightPillar.castShadow = true;
+    rightPillar.receiveShadow = true;
+    scene.add(rightPillar);
+    shapes.push(rightPillar);
+    
+    // Create arch top
+    const archTopGeometry = new THREE.TorusGeometry(4, 0.5, 8, 24, Math.PI);
+    const archTop = new THREE.Mesh(archTopGeometry, archMaterial);
+    archTop.position.set(0, 4, -7);
+    archTop.rotation.x = Math.PI / 2;
+    archTop.castShadow = true;
+    archTop.receiveShadow = true;
+    scene.add(archTop);
+    shapes.push(archTop);
+    
+    // Add small pond
+    const pondGeometry = new THREE.CircleGeometry(4, 32);
+    const pondMaterial = new THREE.MeshStandardMaterial({
+      color: 0x3333ff,
+      metalness: 0.8,
+      roughness: 0.1,
+      transparent: true,
+      opacity: 0.8
+    });
+    const pond = new THREE.Mesh(pondGeometry, pondMaterial);
+    pond.rotation.x = -Math.PI / 2;
+    pond.position.set(8, 0.05, 8); 
+    pond.receiveShadow = true;
+    scene.add(pond);
+    shapes.push(pond);
+    
+    // Add rocks around pond
+    const rockGeometry = new THREE.DodecahedronGeometry(0.5, 0);
+    const rockMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x888888,
+      roughness: 0.9
+    });
+    
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+      rock.position.set(
+        8 + Math.cos(angle) * 4.5,
+        0.25,
+        8 + Math.sin(angle) * 4.5
+      );
+      rock.rotation.set(
+        Math.random() * Math.PI,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI
+      );
+      rock.scale.set(
+        0.7 + Math.random() * 0.6,
+        0.7 + Math.random() * 0.6,
+        0.7 + Math.random() * 0.6
+      );
+      rock.castShadow = true;
+      rock.receiveShadow = true;
+      scene.add(rock);
+      shapes.push(rock);
+    }
+
+    // 3D model loading 
+    const loader = new GLTFLoader();
+    let models = []; 
+    let duckLoaded = false; 
+    
+    // Load model from models folder
+    document.getElementById('load-model').addEventListener('click', function() {
+      if (!duckLoaded) {
+        loadModel('models/Duck.glb', { position: new THREE.Vector3(0, 3, 0), scale: 1.8, isDuck: true });
+      } else {
+        alert('Duck model is already loaded!');
+      }
+    });
+    
+    // Load model from file input
+    document.getElementById('model-input').addEventListener('change', function(event) {
+      if (event.target.files.length > 0) {
+        const file = event.target.files[0];
+        const objectURL = URL.createObjectURL(file);
+        loadModel(objectURL, { position: new THREE.Vector3(8, 0.5, -5), scale: 1.0 });
+      }
+    });
+    
+    // Function to load a model from a URL
+    function loadModel(url, options = {}) {
+      // Default options
+      const modelOptions = {
+        position: options.position || new THREE.Vector3(5, 0, 0),
+        scale: options.scale || 0.5,
+        replace: options.replace || false,
+        isDuck: options.isDuck || false
+      };
+      
+      // Show loading indication
+      const loadingElement = document.getElementById('loading');
+      const loadingPercentage = document.querySelector('.loading-percentage');
+      loadingElement.style.display = 'block';
+      loadingPercentage.textContent = "Starting...";
+      
+      loader.load(
+        url,
+        function (gltf) {
+          loadingElement.style.display = 'none';
+          
+          // Create the model
+          const model = gltf.scene;
+          model.position.copy(modelOptions.position);
+          model.scale.set(modelOptions.scale, modelOptions.scale, modelOptions.scale);
+          model.traverse(function (child) {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          
+          scene.add(model);
+          models.push(model);
+          
+          if (modelOptions.isDuck) {
+            duckLoaded = true;
+          }
+          
+          // Create a small notification that fades out
+          const notification = document.createElement('div');
+          notification.style.position = 'absolute';
+          notification.style.top = '20px';
+          notification.style.left = '50%';
+          notification.style.transform = 'translateX(-50%)';
+          notification.style.background = 'rgba(0, 0, 0, 0.7)';
+          notification.style.color = 'white';
+          notification.style.padding = '10px 20px';
+          notification.style.borderRadius = '5px';
+          notification.style.fontFamily = 'Arial, sans-serif';
+          notification.style.zIndex = '1000';
+          notification.style.opacity = '1';
+          notification.style.transition = 'opacity 1s ease-in-out';
+          notification.textContent = 'Model loaded successfully!';
+          document.body.appendChild(notification);
+          
+          setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+              document.body.removeChild(notification);
+            }, 1000);
+          }, 2000);
+        },
+        function (xhr) {
+          if (xhr.total) {
+            const percentComplete = xhr.loaded / xhr.total * 100;
+            loadingPercentage.textContent = `${Math.round(percentComplete)}%`;
+          } else {
+            loadingPercentage.textContent = `Loaded ${Math.round(xhr.loaded / 1024)} KB`;
+          }
+        },
+        function (error) {
+          loadingElement.style.display = 'none';
+          console.error('An error happened:', error);
+          alert('Error loading model: ' + error.message);
+        }
+      );
+    }
+
+    // Wow Feature: Floating "CLASS OF 2025" celebration
+    let textMeshes = [];
+    let celebrationParticles = [];
+    let textVisible = false;
+    
+    // Create 3D text and celebration effects
+    function createCelebration() {
+      // Create "CLASS OF 2025" with cubes
+      createCubeText();
+      
+      // Create firework particles
+      createFireworks();
+    }
+    
+    // Create text with cubes
+    function createCubeText() {
+      // Cube size and spacing
+      const cubeSize = 0.8;
+      const spacing = 0.3;
+      const yOffset = 18; 
+      const zOffset = -20;
+      
+      // Load textures for different parts of the text
+      const sunTexture = textureLoader.load('resources/sun.png');
+      const grassTexture = textureLoader.load('resources/grass.png');
+      const marvelTexture = textureLoader.load('resources/marvel.jpg');
+    
+      const classMaterial = new THREE.MeshStandardMaterial({
+        map: sunTexture,
+        emissive: 0xff8800,
+        emissiveIntensity: 1.0,
+        metalness: 0.8,
+        roughness: 0.2
+      });
+      
+      const ofMaterial = new THREE.MeshStandardMaterial({
+        map: grassTexture,
+        emissive: 0x00ff00,
+        emissiveIntensity: 0.5,
+        metalness: 0.4,
+        roughness: 0.6
+      });
+      
+      const yearMaterial = new THREE.MeshStandardMaterial({
+        map: marvelTexture,
+        emissive: 0xff00ff,
+        emissiveIntensity: 0.7,
+        metalness: 0.9,
+        roughness: 0.1
+      });
+      
+      // Create CLASS with text layout approach
+      createClassText(cubeSize, spacing, yOffset, zOffset, classMaterial);
+      
+      // Create OF with text layout approach
+      createOfText(cubeSize, spacing, yOffset, zOffset, ofMaterial);
+      
+      // Create 2025 with direct shape approach
+      create2025Text(cubeSize, spacing, yOffset, zOffset, yearMaterial);
+      
+      textVisible = true;
+    }
+    
+    // Create 'CLASS' text using grid layout
+    function createClassText(cubeSize, spacing, yOffset, zOffset, material) {
+      // Text layout data for CLASS
+      const classLayout = [
+        // C
+        [1,1,1,0],
+        [1,0,0,0],
+        [1,0,0,0],
+        [1,0,0,0],
+        [1,1,1,0],
+        [0,0,0,0],
+        // L
+        [1,0,0,0],
+        [1,0,0,0],
+        [1,0,0,0],
+        [1,0,0,0],
+        [1,1,1,0],
+        [0,0,0,0],
+        // A
+        [1,1,1,0],
+        [1,0,1,0],
+        [1,1,1,0],
+        [1,0,1,0],
+        [1,0,1,0],
+        [0,0,0,0],
+        // S
+        [1,1,1,0],
+        [1,0,0,0],
+        [1,1,1,0],
+        [0,0,1,0],
+        [1,1,1,0],
+        [0,0,0,0],
+        // S
+        [1,1,1,0],
+        [1,0,0,0],
+        [1,1,1,0],
+        [0,0,1,0],
+        [1,1,1,0]
+      ];
+      
+      const xStart = -31;
+      let xPos = xStart;
+      let yPos = yOffset;
+      
+      for (let row = 0; row < classLayout.length; row++) {
+        const gridRow = classLayout[row];
+        
+        for (let col = 0; col < gridRow.length; col++) {
+          if (gridRow[col] === 1) {
+            const cubeGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+            const cubeMesh = new THREE.Mesh(cubeGeo, material.clone());
+            
+            cubeMesh.position.set(xPos + (col * (cubeSize + spacing)), yPos, zOffset);
+            cubeMesh.castShadow = true;
+            
+            scene.add(cubeMesh);
+            textMeshes.push(cubeMesh);
+          }
+        }
+        
+        // Move to next row
+        if ((row + 1) % 6 === 0) {
+          xPos = xStart + ((row + 1) / 6) * 5 * (cubeSize + spacing);
+          yPos = yOffset;
+        } else {
+          yPos -= (cubeSize + spacing);
+        }
+      }
+    }
+    
+    // Create 'OF' text using grid layout
+    function createOfText(cubeSize, spacing, yOffset, zOffset, material) {
+      // Text layout data for OF
+      const ofLayout = [
+        // O
+        [1,1,1,0],
+        [1,0,1,0],
+        [1,0,1,0],
+        [1,0,1,0],
+        [1,1,1,0],
+        [0,0,0,0],
+        // F
+        [1,1,1,0],
+        [1,0,0,0],
+        [1,1,1,0],
+        [1,0,0,0],
+        [1,0,0,0]
+      ];
+      
+      // Starting position for OF - centered
+      const xStart = -5;
+      let xPos = xStart;
+      let yPos = yOffset;
+      
+      // Create each cube in the grid
+      for (let row = 0; row < ofLayout.length; row++) {
+        const gridRow = ofLayout[row];
+        
+        for (let col = 0; col < gridRow.length; col++) {
+          if (gridRow[col] === 1) {
+            const cubeGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+            const cubeMesh = new THREE.Mesh(cubeGeo, material.clone());
+            
+            cubeMesh.position.set(xPos + (col * (cubeSize + spacing)), yPos, zOffset);
+            cubeMesh.castShadow = true;
+            
+            scene.add(cubeMesh);
+            textMeshes.push(cubeMesh);
+          }
+        }
+        
+        // Move to next row
+        if ((row + 1) % 6 === 0) {
+          xPos = xStart + ((row + 1) / 6) * 5 * (cubeSize + spacing);
+          yPos = yOffset;
+        } else {
+          yPos -= (cubeSize + spacing);
+        }
+      }
+    }
+    
+    // Create '2025' 
+    function create2025Text(cubeSize, spacing, yOffset, zOffset, material) {
+      const xStart = 5;
+      const digitWidth = cubeSize * 4 + spacing * 3;
+      
+      // Create the "2" digit
+      createDigit2(xStart, yOffset, zOffset, cubeSize, spacing, material.clone());
+      
+      // Create the "0" digit
+      createDigit0(xStart + digitWidth, yOffset, zOffset, cubeSize, spacing, material.clone());
+      
+      // Create the "2" digit again
+      createDigit2(xStart + digitWidth * 2, yOffset, zOffset, cubeSize, spacing, material.clone());
+      
+      // Create the "5" digit
+      createDigit5(xStart + digitWidth * 3, yOffset, zOffset, cubeSize, spacing, material.clone());
+    }
+    
+    // Create digit "2"
+    function createDigit2(xPos, yPos, zPos, size, spacing, material) {
+      // Top horizontal row
+      for (let i = 0; i < 3; i++) {
+        createCube(xPos + i * (size + spacing), yPos, zPos, size, material.clone());
+      }
+      
+      // Top-right vertical
+      createCube(xPos + 2 * (size + spacing), yPos - (size + spacing), zPos, size, material.clone());
+      
+      // Middle horizontal row
+      for (let i = 0; i < 3; i++) {
+        createCube(xPos + i * (size + spacing), yPos - 2 * (size + spacing), zPos, size, material.clone());
+      }
+      
+      // Bottom-left vertical
+      createCube(xPos, yPos - 3 * (size + spacing), zPos, size, material.clone());
+      
+      // Bottom horizontal row
+      for (let i = 0; i < 3; i++) {
+        createCube(xPos + i * (size + spacing), yPos - 4 * (size + spacing), zPos, size, material.clone());
+      }
+    }
+    
+    // Create digit "0"
+    function createDigit0(xPos, yPos, zPos, size, spacing, material) {
+      // Top horizontal row
+      for (let i = 0; i < 3; i++) {
+        createCube(xPos + i * (size + spacing), yPos, zPos, size, material.clone());
+      }
+      
+      // Left vertical
+      for (let i = 1; i < 4; i++) {
+        createCube(xPos, yPos - i * (size + spacing), zPos, size, material.clone());
+      }
+      
+      // Right vertical
+      for (let i = 1; i < 4; i++) {
+        createCube(xPos + 2 * (size + spacing), yPos - i * (size + spacing), zPos, size, material.clone());
+      }
+      
+      // Bottom horizontal row
+      for (let i = 0; i < 3; i++) {
+        createCube(xPos + i * (size + spacing), yPos - 4 * (size + spacing), zPos, size, material.clone());
+      }
+    }
+    
+    // Create digit "5"
+    function createDigit5(xPos, yPos, zPos, size, spacing, material) {
+      // Top horizontal row
+      for (let i = 0; i < 3; i++) {
+        createCube(xPos + i * (size + spacing), yPos, zPos, size, material.clone());
+      }
+      
+      // Top-left vertical
+      createCube(xPos, yPos - (size + spacing), zPos, size, material.clone());
+      
+      // Middle horizontal row
+      for (let i = 0; i < 3; i++) {
+        createCube(xPos + i * (size + spacing), yPos - 2 * (size + spacing), zPos, size, material.clone());
+      }
+      
+      // Bottom-right vertical
+      createCube(xPos + 2 * (size + spacing), yPos - 3 * (size + spacing), zPos, size, material.clone());
+      
+      // Bottom horizontal row
+      for (let i = 0; i < 3; i++) {
+        createCube(xPos + i * (size + spacing), yPos - 4 * (size + spacing), zPos, size, material.clone());
+      }
+    }
+    
+
+    function createCube(x, y, z, size, material) {
+      const cubeGeo = new THREE.BoxGeometry(size, size, size);
+      const cubeMesh = new THREE.Mesh(cubeGeo, material);
+      
+      cubeMesh.position.set(x, y, z);
+      cubeMesh.castShadow = true;
+      
+      scene.add(cubeMesh);
+      textMeshes.push(cubeMesh);
+    }
+    
+    // make firework particles
+    function createFireworks() {
+      // make multiple firework locations
+      const fireworkPositions = [
+        new THREE.Vector3(-15, 10, -15),
+        new THREE.Vector3(15, 10, -15),
+        new THREE.Vector3(0, 20, -25),
+        new THREE.Vector3(-10, 15, -20),
+        new THREE.Vector3(10, 15, -20)
+      ];
+      
+      // Create fireworks at each position
+      fireworkPositions.forEach(position => {
+        createFirework(position);
+      });
+    }
+    
+    // Create a single firework
+    function createFirework(position) {
+      const particleCount = 100;
+      const particles = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
+      const sizes = new Float32Array(particleCount);
+      const velocities = [];
+      
+      // Create firework particles
+      for (let i = 0; i < particleCount; i++) {
+        // Initial position at the firework center
+        positions[i * 3] = position.x;
+        positions[i * 3 + 1] = position.y;
+        positions[i * 3 + 2] = position.z;
+        
+        // Random velocity in all directions
+        const velocity = new THREE.Vector3(
+          (Math.random() - 0.5) * 0.3,
+          (Math.random() - 0.5) * 0.3,
+          (Math.random() - 0.5) * 0.3
+        );
+        velocities.push(velocity);
+        
+        const hue = Math.random();
+        const color = new THREE.Color();
+        color.setHSL(hue, 1, 0.5);
+        
+        colors[i * 3] = color.r;
+        colors[i * 3 + 1] = color.g;
+        colors[i * 3 + 2] = color.b;
+        
+        // Random size
+        sizes[i] = Math.random() * 2 + 0.5;
+      }
+      
+      particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      particles.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+      
+      particles.userData = {
+        velocities: velocities,
+        life: 0,
+        maxLife: 3 + Math.random() * 2 
+      };
+      
+      // Create particle material
+      const sunTexture = textureLoader.load('resources/sun.png');
+      const particleMaterial = new THREE.PointsMaterial({
+        size: 1,
+        map: sunTexture,
+        transparent: true,
+        vertexColors: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      
+      // Create the particle system
+      const particleSystem = new THREE.Points(particles, particleMaterial);
+      scene.add(particleSystem);
+      
+      // Store the particle system for animation
+      celebrationParticles.push(particleSystem);
+    }
+    
+    // Toggle celebration
+    document.getElementById('toggle-text').addEventListener('click', function() {
+      textVisible = !textVisible;
+      
+      if (textVisible) {
+        if (textMeshes.length === 0) {
+          createCelebration();
+        } else {
+          // Show existing text
+          textMeshes.forEach(mesh => {
+            mesh.visible = true;
+          });
+          
+          // Create new fireworks
+          createFireworks();
+        }
+        
+        // Enable celebration lighting
+        rectLight.visible = true;
+        this.textContent = "Hide Celebration";
+      } else {
+        textMeshes.forEach(mesh => {
+          mesh.visible = false;
+        });
+        
+        // Remove particles
+        celebrationParticles.forEach(particles => {
+          scene.remove(particles);
+        });
+        
+        celebrationParticles = [];
+        
+        // Disable celebration lighting
+        rectLight.visible = false;
+        this.textContent = "Show Celebration";
+      }
+    });
+
+    // Mouse interaction
+    const mouse = new THREE.Vector2();
+    const mouseRaycaster = new THREE.Raycaster();
+    let mouseIntersection = new THREE.Vector3();
+    
+    function onMouseMove(event) {
+      // Calculate mouse position in normalized device coordinates
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      
+      // Update the picking ray with the camera and mouse position
+      mouseRaycaster.setFromCamera(mouse, camera);
+      
+      // Calculate mouse position in 3D space
+      mouseIntersection.set(mouse.x * 10, mouse.y * 5 + 5, 0);
+      mouseIntersection.unproject(camera);
+    }
+    
+    window.addEventListener('mousemove', onMouseMove, false);
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      // Animate dodecahedron
+      dodecahedron.rotation.x += 0.01;
+      dodecahedron.rotation.y += 0.02;
+      
+      // Animate some spheres
+      const time = Date.now() * 0.001;
+      shapes[1].position.y = Math.sin(time * 1.0) * 0.5 + 1.0;
+      shapes[2].position.y = Math.sin(time * 1.2 + 0.5) * 0.5 + 1.0;
+      shapes[3].position.y = Math.sin(time * 1.4 + 1.0) * 0.5 + 1.0;
+      
+      // Animate models
+      models.forEach((model, index) => {
+        if (model) {
+          model.rotation.y += 0.01;
+        }
+      });
+      
+      // Animate celebration elements if visible
+      if (textVisible && textMeshes.length > 0) {
+        textMeshes.forEach((mesh, index) => {
+          // Floating animation with offset for more natural movement
+          const offset = index * 0.2;
+          mesh.position.y += Math.sin(time + offset) * 0.01;
+          
+          // Subtle rotation
+          mesh.rotation.x += 0.002;
+          mesh.rotation.y += 0.002;
+          
+          // Glowing animation
+          if (mesh.material.emissiveIntensity) {
+            mesh.material.emissiveIntensity = 0.5 + Math.sin(time * 2 + offset) * 0.3;
+          }
+        });
+        
+        // Animate firework particles
+        celebrationParticles.forEach((particles, particleIndex) => {
+          const positions = particles.geometry.attributes.position.array;
+          const colors = particles.geometry.attributes.color.array;
+          const sizes = particles.geometry.attributes.size.array;
+          const velocities = particles.geometry.userData.velocities;
+          
+          // Update particle lifetime
+          particles.geometry.userData.life += 0.016; // ~60fps
+          const lifeRatio = particles.geometry.userData.life / particles.geometry.userData.maxLife;
+          
+          // Update each particle
+          for (let i = 0; i < positions.length / 3; i++) {
+            const ix = i * 3;
+            const iy = i * 3 + 1;
+            const iz = i * 3 + 2;
+            
+            // Update position based on velocity
+            positions[ix] += velocities[i].x;
+            positions[iy] += velocities[i].y;
+            positions[iz] += velocities[i].z;
+            
+            // gravity effect
+            velocities[i].y -= 0.005;
+            
+            // Fade out based on life
+            if (lifeRatio > 0.5) {
+              const fade = 1 - (lifeRatio - 0.5) * 2;
+              sizes[i] *= 0.99; // Gradually reduce size
+              
+              // Fade color
+              colors[ix] *= 0.99;
+              colors[iy] *= 0.99;
+              colors[iz] *= 0.99;
+            }
+          }
+          
+          // Update particle system
+          particles.geometry.attributes.position.needsUpdate = true;
+          particles.geometry.attributes.color.needsUpdate = true;
+          particles.geometry.attributes.size.needsUpdate = true;
+          
+          // recreate firework if it has expired
+          if (lifeRatio >= 1) {
+            scene.remove(particles);
+            celebrationParticles[particleIndex] = null;
+            
+            // Create a new firework at a rand pos
+            const newPosition = new THREE.Vector3(
+              (Math.random() - 0.5) * 30,
+              10 + Math.random() * 15,
+              -15 - Math.random() * 15
+            );
+            
+            createFirework(newPosition);
+          }
+        });
+        
+        // clear up expired fireworks
+        celebrationParticles = celebrationParticles.filter(p => p !== null);
+      }
+      
+      // Update controls
+      controls.update();
+      
+      renderer.render(scene, camera);
+    }
+
+    // window resize
+    window.addEventListener('resize', function() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    });
+    
+    // Camera control sliders
+    const cameraX = document.getElementById('camera-x');
+    const cameraY = document.getElementById('camera-y');
+    const cameraZ = document.getElementById('camera-z');
+    const cameraFOV = document.getElementById('camera-fov');
+    
+    // Display values
+    const cameraXValue = document.getElementById('camera-x-value');
+    const cameraYValue = document.getElementById('camera-y-value');
+    const cameraZValue = document.getElementById('camera-z-value');
+    const cameraFOVValue = document.getElementById('camera-fov-value');
+    
+    // Set initial values
+    cameraX.value = camera.position.x;
+    cameraY.value = camera.position.y;
+    cameraZ.value = camera.position.z;
+    cameraFOV.value = camera.fov;
+    
+    // Update display values
+    cameraXValue.textContent = camera.position.x;
+    cameraYValue.textContent = camera.position.y;
+    cameraZValue.textContent = camera.position.z;
+    cameraFOVValue.textContent = camera.fov;
+    
+    // listeners for sliders
+    cameraX.addEventListener('input', function() {
+      camera.position.x = parseFloat(this.value);
+      cameraXValue.textContent = this.value;
+      controls.update();
+    });
+    
+    cameraY.addEventListener('input', function() {
+      camera.position.y = parseFloat(this.value);
+      cameraYValue.textContent = this.value;
+      controls.update();
+    });
+    
+    cameraZ.addEventListener('input', function() {
+      camera.position.z = parseFloat(this.value);
+      cameraZValue.textContent = this.value;
+      controls.update();
+    });
+    
+    cameraFOV.addEventListener('input', function() {
+      camera.fov = parseFloat(this.value);
+      cameraFOVValue.textContent = this.value;
+      camera.updateProjectionMatrix();
+    });
+    
+    // Reset camera button
+    document.getElementById('reset-camera').addEventListener('click', function() {
+      camera.position.set(4, 9, 29);
+      camera.fov = 75;
+      camera.updateProjectionMatrix();
+      
+      // Update sliders
+      cameraX.value = 4;
+      cameraY.value = 9;
+      cameraZ.value = 29;
+      cameraFOV.value = 75;
+      
+      // Update display values
+      cameraXValue.textContent = '4';
+      cameraYValue.textContent = '9';
+      cameraZValue.textContent = '29';
+      cameraFOVValue.textContent = '75';
+      
+      controls.update();
+    });
+
+    // animation loop
+    animate();
+  </script>
+</body>
+</html>
+
